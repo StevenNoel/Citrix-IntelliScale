@@ -18,7 +18,7 @@ Set-AWSCredentials -AccessKey asdfasdf -SecretKey asdfasdfasdfasdfasdf -StoreAs 
 ## For Azure:
 Still being worked on
 
-#Parameters
+# Parameters
 -LogDir : This is the output director for logging.  Also used by the -Email paraemter
 
 -ScheduleMode : This puts the script in 'Schedule Mode'
