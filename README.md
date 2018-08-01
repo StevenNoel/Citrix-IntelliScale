@@ -10,12 +10,12 @@ Note: Use the -LogOnly option to run the script in Log Only mode, which doesn't 
 3) Run Under a domain account that is a Cirix Farm Administrator
 4) Run as a Scheduled Task
 
-For AWS:
+## For AWS:
 AWS Tools for Powershell - https://aws.amazon.com/powershell/
 Launch Powershell AWS Tools as admin
 Set-AWSCredentials -AccessKey asdfasdf -SecretKey asdfasdfasdfasdfasdf -StoreAs My-AWS-Credentials
 
-For Azure:
+## For Azure:
 Still being worked on
 
 #Parameters
