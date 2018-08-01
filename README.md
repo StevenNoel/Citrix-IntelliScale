@@ -20,22 +20,39 @@ Still being worked on
 
 # Parameters
 -LogDir : This is the output director for logging.  Also used by the -Email paraemter
+
 -ScheduleMode : This puts the script in 'Schedule Mode'
+
 -SchedStart : Used with -ScheduleMode, this tells the script what time to Start Powering UP machines. (military time format)
+
 -SchedFinish : Used with -ScheduleMode, this tells the script what time to Start Powering DOWN machines. (military time format)
+
 -LoadMode : This puts the script in 'Load Mode'.  This hasn't been written yet.
+
 -DeliveryController : This is the Citrix Delivery Controller
+
 -DGName : This is the Delivery Group Name you are targeting
+
 -BaseTag : This is a Citrix Tag assigned to VDAs that you don't want the script to touch.  Used to denote machines that are always on
+
 -IgnoreTag : This is a Citrix Tag
+
 -AWS : Used to denote that the script will use Power Up/Down actions via AWS CLI
+
 -AWSProfile : Used in conjunction with -AWS.  This tells the AWS CLI what set of credentials to use. (See prerequisite for setup)
+
 -OnPrem : Used to denote that script will use Power Up/Down actions via Citrix Broker commands
+
 -Azure : Used to denote that script will use Power Up/Down actions via Azure CLI
+
 -LogOnly : Puts the script in Audit Mode.  It will report everything that it should do, but won't take any action.
+
 -Email : Denotes that it will email the results
+
 -SMTPserver : SMTP server
+
 -ToAddress : Email To
+
 -FromAddress: Email From
 
 # Modes
