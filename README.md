@@ -11,9 +11,10 @@ Note: Use the -LogOnly option to run the script in Log Only mode, which doesn't 
 4) Run as a Scheduled Task
 
 ## For AWS:
-AWS Tools for Powershell - https://aws.amazon.com/powershell/
-Launch Powershell AWS Tools as admin
-Set-AWSCredentials -AccessKey asdfasdf -SecretKey asdfasdfasdfasdfasdf -StoreAs My-AWS-Credentials
+1) AWS Tools for Powershell - https://aws.amazon.com/powershell/
+2) Launch Powershell AWS Tools as admin
+3) Set-AWSCredentials -AccessKey asdfasdf -SecretKey asdfasdfasdfasdfasdf -StoreAs My-AWS-Credentials
+4) Get-AWSCredential -ListProfileDetail (to confirm you have a profile now)
 
 ## For Azure:
 Still being worked on
