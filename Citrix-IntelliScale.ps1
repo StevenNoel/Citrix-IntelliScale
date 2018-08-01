@@ -268,7 +268,7 @@ Function Enter-ScheduleOut
                                         Try
                                             {
                                                 $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -like $machineOut.DNSName.Split(".",2)[0]}
-                                                if ($instance.instances.state.Name -eq 'started')
+                                                if ($instance.instances.state.Name -eq 'running')
                                                     {
                                                         Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instances.instanceid "(Powering off Machine)"
                                                         if (!($LogOnly))
