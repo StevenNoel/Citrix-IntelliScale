@@ -39,7 +39,7 @@ Still being worked on
 
 -BaseTag : This is a Citrix Tag assigned to VDAs that you don't want the script to touch.  Used to denote machines that are always on
 
--IgnoreTag : This is a Citrix Tag
+-IgnoreTag : This is a Citrix Tag used to specify a machine that you don't want to be included in the script.
 
 -AWS : Used to denote that the script will use Power Up/Down actions via AWS CLI
 
