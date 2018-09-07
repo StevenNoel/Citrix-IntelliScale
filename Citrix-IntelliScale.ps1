@@ -20,6 +20,12 @@ This script can be used to intelligently power up/down machines on prem or in th
 .PARAMETER (parameter2)
 (Enter details on how paraemter works/requirements)
 
+Azure:
+Install-Module -Name azurerm
+Enable-AzureRmContextAutosave
+Connect-AzureRmAccount (sign in)
+
+
 .EXAMPLE
 & '.\(Name of Script).ps1' -DeliveryController Citrix-ddc1 -LogDir C:\temp -ScheduleMode -SchedStart 6 -SchedFinish 16 -DGName DG-Server2012R2 -BaseTag Base -OnPrem -LogOnly
 This script will look at the dlivery group 'DG-Server2012R2' on the Delivery Controller 'Citrix-ddc1'.  It's using the mode 'ScheduleMode' which powers up/down machines based upon Times set
@@ -46,6 +52,10 @@ Param
     [Switch]$LoadMode,
     [int]$SchedStart,
     [int]$SchedFinish,
+    [int]$ThreshHoldLoad, #new
+    [int]$CapacityBuffer, #new
+    [int]$MinNumberAvail, #new
+    [int]$ThresholdPowerOff, #new
     [Parameter(Mandatory=$True)][string]$DGName,
     [string]$BaseTag,
     [string]$IgnoreTag,
@@ -54,6 +64,7 @@ Param
     [String]$AWSProfile,
     [Switch]$OnPrem,
     [Switch]$Azure,
+    [Switch]$Weekend,
     [Switch]$LogOnly,
     [Switch]$Email,
     [String]$SMTPserver,
@@ -84,16 +95,18 @@ Function Get-IntelliMode
                 Try
                     {
                         $machines = Get-BrokerDesktop -AdminAddress $DeliveryController -MaxRecordCount 10000 -DesktopGroupName $DGName
+                        $DeliveryGroup = Get-BrokerDesktopGroup -AdminAddress $DeliveryController -Name $DGName
                     }
                 Catch
                     {
                         Write-host 'Unable to run command Get-BrokerDesktop, check $DeliveryController and $DGName variables'
                         exit
                     }
+                if ($Weekend) {$IsWeekend = (get-date).DayOfWeek | Where-Object {$_ -like 'Saturday' -or $_ -like 'Sunday'}}
 
                 if ($ScheduleMode)
                     {
-                        if ($SchedStart -le $CurrentHour -and $SchedFinish -ge $CurrentHour)
+                        if ($SchedStart -le $CurrentHour -and $SchedFinish -ge $CurrentHour -and $IsWeekend -eq $null)
                         {
                             #write-host "In Business"
                             Enter-ScheduleIn($machines)
@@ -106,7 +119,28 @@ Function Get-IntelliMode
                     }
                 if ($LoadMode)
                     {
-                        #Not Scheduled Mode
+                        If ($DeliveryGroup.SessionSupport -like 'Multi*')
+                            {
+                                $machinesLoad = $machines | Where-Object {$_.Tags -notcontains $IgnoreTag -and $_.Tags -notcontains $BaseTag}
+                                $totalload = [math]::Round(($machinesLoad.loadindex | Measure-Object -Sum).Sum / ($machinesLoad.InMaintenanceMode | Group-Object {$_.Name -eq 'False'} | Select-Object -ExpandProperty Count)/100)
+
+                                if ($totalload -ilt $threshhold)
+                                    {
+                                        Enter-LoadModeRemoveCapacity($totalload,$machinesLoad)
+                                    }
+                                Else
+                                    {
+                                        Enter-LoadModeAddCapacity($totalload,$machinesLoad)
+                                    }
+                            }
+                        If ($DeliveryGroup.SessionSupport -like 'Single*')
+                            {
+                                #Use $MinNumberAvail (default 2) and $CapacityBuffer (default 10%)
+                                #$machinesLoad = $machines | Where-Object {$_.Tags -notcontains $IgnoreTag -and $_.Tags -notcontains $BaseTag}
+                                #$totalload = [math]::Round($machinesLoad.AssociatedUserNames.count / ($machinesLoad.InMaintenanceMode | Group-Object {$_.Name -eq 'False'} | Select-Object -ExpandProperty Count)*100)
+                                
+
+                            }
                     }
             }
         Else
@@ -244,7 +278,7 @@ Function Enter-ScheduleOut
                                     }
                             }
                         #Power Off Machines
-                        if ($machineOut.InMaintenanceMode -eq '$True' -and !($machineOut.AssociatedUserNames))
+                        if ((Get-BrokerDesktop -AdminAddress $DeliveryController $machineOut.MachineName).InMaintenanceMode -eq 'True' -and !($machineOut.AssociatedUserNames))
                             {
                                 if ($OnPrem)
                                     {
@@ -305,13 +339,45 @@ Function Enter-ScheduleOut
                             }
                         else
                             {
-                                Write-host $machineOut.DNSName.Split(".",2)[0] "(User/s logged on or Can't put Machine in MAINT mode, cannot reboot Machine)"
+                                Write-host $machineOut.DNSName.Split(".",2)[0] "(User/s logged on or Can't put Machine in MAINT mode, cannot Power Off Machine)"
                             }
                     }
             }
         Else
             {
                 Write-host "No machines to work with Outside of Business hours, Check Tags"
+            }
+    }
+
+Function Enter-LoadModeRemoveCapacity
+    {
+        Write-host "Enter LoadMode Remove"
+
+        $machinesLoad = $machines | Where-Object {$_.Tags -notcontains $IgnoreTag -and $_.Tags -notcontains $BaseTag}
+        if ($machinesLoad)
+            {
+                Write-Host "Working on Machines:"
+                $machinesLoad | Format-Table MachineName,DesktopGroupName,LoadIndex,RegistrationState,InMaintenanceMode,Tags
+                Foreach ($machineLoad in $machinesLoad)
+                    {
+                        
+                    }
+            }
+    }
+
+    Function Enter-LoadModeAddCapacity
+    {
+        Write-host "Enter LoadMode Add"
+
+        $machinesLoad = $machines | Where-Object {$_.Tags -notcontains $IgnoreTag -and $_.Tags -notcontains $BaseTag}
+        if ($machinesLoad)
+            {
+                Write-Host "Working on Machines:"
+                $machinesLoad | Format-Table MachineName,DesktopGroupName,LoadIndex,RegistrationState,InMaintenanceMode,Tags
+                Foreach ($machineLoad in $machinesLoad)
+                    {
+                        
+                    }
             }
     }
 
