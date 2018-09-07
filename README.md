@@ -49,6 +49,8 @@ Still being worked on
 
 -Azure : Used to denote that script will use Power Up/Down actions via Azure CLI
 
+-Weekend : Used to with -SchedMode to Enter the Enter-ScheduleOut Function if the day is a Saturday or Sunday, regardless of time.
+
 -LogOnly : Puts the script in Audit Mode.  It will report everything that it should do, but won't take any action.
 
 -Email : Denotes that it will email the results
