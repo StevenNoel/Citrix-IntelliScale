@@ -102,7 +102,7 @@ Function Get-IntelliMode
                         Write-host 'Unable to run command Get-BrokerDesktop, check $DeliveryController and $DGName variables'
                         exit
                     }
-                if ($Weekend) {$IsWeekend = (get-date).DayOfWeek | Where-Object {$_ -like 'Saturday' -or $_ -like 'Sunday'}}
+                if ($Weekend) {$IsWeekend = (get-date).DayOfWeek | Where-Object {$_ -like 'Saturday' -or $_ -like 'Sunday' -or $_ -like 'Friday'}}
 
                 if ($ScheduleMode)
                     {
@@ -203,7 +203,7 @@ Function Enter-ScheduleIn
                                 Write-host "AWS"
                                 Try
                                     {
-                                        $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -like $machineIn.DNSName.Split(".",2)[0]}
+                                        $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineIn.DNSName.Split(".",2)[0]}
                                         if ($instance.instances.state.Name -eq 'stopped')
                                             {
                                                 Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instances.instanceid "(Starting Machine)"
@@ -301,7 +301,7 @@ Function Enter-ScheduleOut
                                         Write-Host "AWS"
                                         Try
                                             {
-                                                $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -like $machineOut.DNSName.Split(".",2)[0]}
+                                                $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineOut.DNSName.Split(".",2)[0]}
                                                 if ($instance.instances.state.Name -eq 'running')
                                                     {
                                                         Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instances.instanceid "(Powering off Machine)"
