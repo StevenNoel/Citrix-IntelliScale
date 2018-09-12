@@ -102,7 +102,7 @@ Function Get-IntelliMode
                         Write-host 'Unable to run command Get-BrokerDesktop, check $DeliveryController and $DGName variables'
                         exit
                     }
-                if ($Weekend) {$IsWeekend = (get-date).DayOfWeek | Where-Object {$_ -like 'Saturday' -or $_ -like 'Sunday' -or $_ -like 'Friday'}}
+                if ($Weekend) {$IsWeekend = (get-date).DayOfWeek | Where-Object {$_ -like 'Saturday' -or $_ -like 'Sunday'}}
 
                 if ($ScheduleMode)
                     {
