@@ -5,8 +5,7 @@ Tested with XA/XD 7.15LTSR and 7.18, however this should work with pretty much a
 
 Note: 
 1) Use the -LogOnly option to run the script in Log Only mode, which doesn't take any actions on any machines.
-2) Only -AWS and -OnPrem parameters works right now. -Azure is still being written
-3) Only -ScheduleLoad parameter works right now, -LoadMode is still being written
+2) Only -ScheduleLoad parameter works right now, -LoadMode is still being written
 
 # Prerequisites
 1) You can run this on a Delivery Controller or a machine that has Studio installed.  See link for more information: https://developer-docs.citrix.com/projects/delivery-controller-sdk/en/latest/?_ga=2.136519158.731763323.1530151703-1594485461.1522783813#use-the-sdk 
