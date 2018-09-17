@@ -22,9 +22,8 @@ This script can be used to intelligently power up/down machines on prem or in th
 
 Azure:
 Install-Module -Name azurerm
-Enable-AzureRmContextAutosave
-Connect-AzureRmAccount (sign in)
-
+Login-AzureRmAccount
+<Needed? Enable-AzureRmContextAutosave,Connect-AzureRmAccount (sign in)>
 
 .EXAMPLE
 & '.\(Name of Script).ps1' -DeliveryController Citrix-ddc1 -LogDir C:\temp -ScheduleMode -SchedStart 6 -SchedFinish 16 -DGName DG-Server2012R2 -BaseTag Base -OnPrem -LogOnly
@@ -206,7 +205,7 @@ Function Enter-ScheduleIn
                                         $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineIn.DNSName.Split(".",2)[0]}
                                         if ($instance.instances.state.Name -eq 'stopped')
                                             {
-                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instances.instanceid "(Starting Machine)"
+                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instances.instanceid "(Starting Machine - AWS)"
                                                 if (!($LogOnly))
                                                     {
                                                         Try
@@ -215,7 +214,7 @@ Function Enter-ScheduleIn
                                                             }
                                                         Catch
                                                             {
-                                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.Instances.instanceid "(Unable to Start AWS Instance)"
+                                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.Instances.instanceid "(Unable to Start Instance - AWS)"
                                                             }
                                                     }
                                             }
@@ -226,23 +225,38 @@ Function Enter-ScheduleIn
                                     }
                                 Catch
                                     {
-                                        Write-Host $machineIn.DNSName.Split(".",2)[0] "(Unable to Get AWS Instance)"
+                                        Write-Host $machineIn.DNSName.Split(".",2)[0] "(Unable to Get Instance - AWS)"
                                     }
                             }
                         if ($Azure)
                             {
                                 Write-host "Azure"
-                                Write-Host $machineIn.DNSName.Split(".",2)[0] "(Starting Machine)"
-                                if (!($LogOnly))
+                                Try
                                     {
-                                        Try
+                                        $Instance = get-azureRMVM -Status | Where-Object {$_.Name -match $machineIn.DNSName.Split(".",2)[0]}
+                                        if ($instance.PowerState -eq 'VM deallocated')
                                             {
-                                                #Needs work
+                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.name "(Starting Machine - Azure)"
+                                                if (!($LogOnly))
+                                                    {
+                                                        Try
+                                                            {
+                                                                Start-AzureRmVM -ResourceGroupName $Instance.ResourceGroupName -Name $Instance.Name | Out-Null
+                                                            }
+                                                        Catch
+                                                            {
+                                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.Name "(Unable to Start Instance - Azure)"
+                                                            }
+                                                    }
                                             }
-                                        Catch
+                                        Else
                                             {
-                                                Write-Host $machineIn.DNSName.Split(".",2)[0] "(Unable to Get/Start Azure Instance)"
+                                                Write-Host $machineIn.DNSName.Split(".",2)[0] "(Already Powered On - Azure)"
                                             }
+                                    }
+                                Catch
+                                    {
+                                        Write-Host $machineIn.DNSName.Split(".",2)[0] "(Unable to Get Instance - Azure)"
                                     }
                             }
                     }
@@ -304,7 +318,7 @@ Function Enter-ScheduleOut
                                                 $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineOut.DNSName.Split(".",2)[0]}
                                                 if ($instance.instances.state.Name -eq 'running')
                                                     {
-                                                        Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instances.instanceid "(Powering off Machine)"
+                                                        Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instances.instanceid "(Powering off Machine - AWS)"
                                                         if (!($LogOnly))
                                                             {
                                                                 Try
@@ -313,7 +327,7 @@ Function Enter-ScheduleOut
                                                                     }
                                                                 Catch
                                                                     {
-                                                                        Write-Host $instance.instances.tag.value $Instance.instances.instanceid "(Unable to Stop Instance)"
+                                                                        Write-Host $instance.instances.tag.value $Instance.instances.instanceid "(Unable to Stop Instance - AWS)"
                                                                     }
                                                             }
                                                     }
@@ -324,16 +338,38 @@ Function Enter-ScheduleOut
                                             }
                                         Catch
                                             {
-                                                Write-Host $machineOut.DNSName.Split(".",2)[0] "(Unable to Get Instance)"
+                                                Write-Host $machineOut.DNSName.Split(".",2)[0] "(Unable to Get Instance - AWS)"
                                             }
                                     }
                                 if ($Azure)
                                     {
-                                        Write-Host "Azure"
-                                        Write-host $machineOut.DNSName.Split(".",2)[0] "(Powering off Machine)"
-                                        If (!($LogOnly))
+                                        Write-host "Azure"
+                                        Try
                                             {
-                                                #Needs work
+                                                $Instance = get-azureRMVM -Status | Where-Object {$_.Name -match $machineOut.DNSName.Split(".",2)[0]}
+                                                if ($instance.PowerState -eq 'VM running')
+                                                    {
+                                                        Write-Host $machineOut.DNSName.Split(".",2)[0] $instance.name "(Powering off Machine - Azure)"
+                                                        if (!($LogOnly))
+                                                            {
+                                                                Try
+                                                                    {
+                                                                        Stop-AzureRmVM -ResourceGroupName $Instance.ResourceGroupName -Name $Instance.Name -Force | Out-Null
+                                                                    }
+                                                                Catch
+                                                                    {
+                                                                        Write-Host $machineOut.DNSName.Split(".",2)[0] $instance.Name "(Unable to Stop Instance - Azure)"
+                                                                    }
+                                                            }
+                                                    }
+                                                Else
+                                                    {
+                                                        Write-Host $machineOut.DNSName.Split(".",2)[0] "(Already Powered Down - Azure)"
+                                                    }
+                                            }
+                                        Catch
+                                            {
+                                                Write-Host $machineOut.DNSName.Split(".",2)[0] "(Unable to Get Instance - Azure)"
                                             }
                                     }
                             }
