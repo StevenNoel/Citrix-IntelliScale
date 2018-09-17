@@ -20,7 +20,8 @@ Note:
 4) Get-AWSCredential -ListProfileDetail (to confirm you have a profile now)
 
 ## For Azure:
-Still being worked on
+1) Install-Module -Name azurerm
+2) Login-AzureRmAccount
 
 # Parameters
 -LogDir : This is the output director for logging.  Also used by the -Email paraemter
