@@ -202,19 +202,19 @@ Function Enter-ScheduleIn
                                 Write-host "AWS"
                                 Try
                                     {
-                                        $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineIn.DNSName.Split(".",2)[0]}
-                                        if ($instance.instances.state.Name -eq 'stopped')
+                                        $instance = (Get-EC2Instance -ProfileName $AWSProfile).Instances | Where-Object {$_.Tag.value -match $machineIn.DNSName.Split(".",2)[0]}
+                                        if ($instance.state.Name -eq 'stopped')
                                             {
-                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instances.instanceid "(Starting Machine - AWS)"
+                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instanceid "(Starting Machine - AWS)"
                                                 if (!($LogOnly))
                                                     {
                                                         Try
                                                             {
-                                                                Start-EC2Instance -ProfileName $AWSProfile -InstanceId $instance.Instances.instanceid | Out-Null
+                                                                Start-EC2Instance -ProfileName $AWSProfile -InstanceId $instance.instanceid | Out-Null
                                                             }
                                                         Catch
                                                             {
-                                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.Instances.instanceid "(Unable to Start Instance - AWS)"
+                                                                Write-Host $machineIn.DNSName.Split(".",2)[0] $instance.instanceid "(Unable to Start Instance - AWS)"
                                                             }
                                                     }
                                             }
@@ -315,19 +315,19 @@ Function Enter-ScheduleOut
                                         Write-Host "AWS"
                                         Try
                                             {
-                                                $instance = Get-EC2Instance -ProfileName $AWSProfile | Where-Object {$_.Instances.Tag.value -match $machineOut.DNSName.Split(".",2)[0]}
-                                                if ($instance.instances.state.Name -eq 'running')
+                                                $instance = (Get-EC2Instance -ProfileName $AWSProfile).Instances | Where-Object {$_.Tag.value -match $machineOut.DNSName.Split(".",2)[0]}
+                                                if ($instance.state.Name -eq 'running')
                                                     {
-                                                        Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instances.instanceid "(Powering off Machine - AWS)"
+                                                        Write-host $machineOut.DNSName.Split(".",2)[0] $Instance.instanceid "(Powering off Machine - AWS)"
                                                         if (!($LogOnly))
                                                             {
                                                                 Try
                                                                     {
-                                                                        Stop-EC2Instance -ProfileName $AWSProfile -InstanceId $instance.Instances.instanceid | Out-Null
+                                                                        Stop-EC2Instance -ProfileName $AWSProfile -InstanceId $instance.instanceid | Out-Null
                                                                     }
                                                                 Catch
                                                                     {
-                                                                        Write-Host $instance.instances.tag.value $Instance.instances.instanceid "(Unable to Stop Instance - AWS)"
+                                                                        Write-Host $instance.instances.tag.value $Instance.instanceid "(Unable to Stop Instance - AWS)"
                                                                     }
                                                             }
                                                     }
